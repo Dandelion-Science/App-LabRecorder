@@ -20,19 +20,19 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
-    fail-fast: false
-    matrix:
-      include:
-        - os: ubuntu-latest
-          cmake_extra: "-DCPACK_DEBIAN_PACKAGE_SHLIBDEPS=ON"
-        - os: ubuntu-22.04
-          cmake_extra: "-DCPACK_DEBIAN_PACKAGE_SHLIBDEPS=ON"
-        - os: ubuntu-20.04
-          cmake_extra: "-DCPACK_DEBIAN_PACKAGE_SHLIBDEPS=ON"
-        - os: macos-latest
-          cmake_extra: ""
-        - os: windows-latest
-          cmake_extra: "-T v142,host=x86"
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            cmake_extra: "-DCPACK_DEBIAN_PACKAGE_SHLIBDEPS=ON"
+          - os: ubuntu-22.04
+            cmake_extra: "-DCPACK_DEBIAN_PACKAGE_SHLIBDEPS=ON"
+          - os: ubuntu-20.04
+            cmake_extra: "-DCPACK_DEBIAN_PACKAGE_SHLIBDEPS=ON"
+          - os: macos-latest
+            cmake_extra: ""
+          - os: windows-latest
+            cmake_extra: "-T v142,host=x86"
     steps:
       - uses: actions/checkout@v4
         with:
