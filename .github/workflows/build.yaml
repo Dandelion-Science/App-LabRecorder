@@ -45,7 +45,7 @@ jobs:
         with:
           version: "6.4.0"
           arch: "win64_msvc2019_64"
-        if: ${{ matrix.os == 'macos-latest' }}
+        if: ${{ matrix.os == 'windows-latest' }}
       - run: brew install qt
         if: ${{ matrix.os == 'macos-latest' }}
       - name: Configure CMake
