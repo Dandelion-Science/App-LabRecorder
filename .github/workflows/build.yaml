@@ -45,7 +45,7 @@ jobs:
           cmake --version
           cmake -S . -B build \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=${PWD}//install \
+            -DCMAKE_INSTALL_PREFIX=${PWD}/install \
             -DLSL_BUILD_STATIC=ON \
             ${{ matrix.cmake_extra }}
       - run: cmake -DLSL_UNIXFOLDERS=ON build
@@ -100,9 +100,9 @@ jobs:
           cmake --version
           cmake -S . -B build \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=${PWD}//install_labrecorder \
-            -DCPACK_PACKAGE_DIRECTORY=${PWD}//package \
-            -DLSL_INSTALL_ROOT="${PWD}//install" \
+            -DCMAKE_INSTALL_PREFIX=${PWD}/install_labrecorder \
+            -DCPACK_PACKAGE_DIRECTORY=${PWD}/package \
+            -DLSL_INSTALL_ROOT="${PWD}/install" \
             ${{ matrix.cmake_extra }}
       - run: cmake -DLSL_UNIXFOLDERS=ON build
         if: ${{ runner.os == 'Linux' }}
