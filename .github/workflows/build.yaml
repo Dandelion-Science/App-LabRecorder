@@ -47,16 +47,12 @@ jobs:
           cmake --version
           cmake -S . -B build \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install \
+            -DCMAKE_INSTALL_PREFIX=${PWD}//install \
             -DLSL_BUILD_STATIC=ON \
             ${{ matrix.cmake_extra }}
       - run: cmake -DLSL_UNIXFOLDERS=ON build
         if: ${{ runner.os == 'Linux' }}
       - run: cmake --build build --config Release -j --target install
-      - run: cd ${{ github.workspace }}
-        if: ${{ runner.os != 'Windows' }}
-      - run: cd "$(cygpath -u "${{ github.workspace }}")"
-        if: ${{ runner.os == 'Windows' }}
       - run: tar czf liblsl-static-${{ matrix.os }}.tar.gz install
       - uses: actions/upload-artifact@v4
         with:
@@ -108,9 +104,9 @@ jobs:
           cmake --version
           cmake -S . -B build \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install_labrecorder \
-            -DCPACK_PACKAGE_DIRECTORY=${{ github.workspace }}/package \
-            -DLSL_INSTALL_ROOT="${{ github.workspace }}/install" \
+            -DCMAKE_INSTALL_PREFIX=${PWD}//install_labrecorder \
+            -DCPACK_PACKAGE_DIRECTORY=${PWD}//package \
+            -DLSL_INSTALL_ROOT="${PWD}//install" \
             ${{ matrix.cmake_extra }}
       - run: cmake -DLSL_UNIXFOLDERS=ON build
         if: ${{ runner.os == 'Linux' }}
