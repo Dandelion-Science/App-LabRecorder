@@ -15,9 +15,57 @@ defaults:
     shell: bash
 
 jobs:
-  cmake:
+  liblsl:
     if: ${{ github.event.pull_request.draft == false }}
-    name: ${{ matrix.os }}
+    name: liblsl on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            cmake_extra: ""
+          - os: ubuntu-22.04
+            cmake_extra: ""
+          - os: ubuntu-20.04
+            cmake_extra: ""
+          - os: macos-latest
+            cmake_extra: ""
+          - os: windows-latest
+            cmake_extra: "-T v142,host=x86"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: sccn/liblsl
+      - run: sudo apt install -y libpugixml-dev
+        if: ${{ runner.os == 'Linux' }}
+      - run: brew install pugixml  # TODO: attempt to remove this install
+        if: ${{ runner.os == 'macOS' }}
+      - name: Configure CMake
+        run: |
+          cmake --version
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install \
+            -DLSL_BUILD_STATIC=ON \
+            ${{ matrix.cmake_extra }}
+      - run: cmake -DLSL_UNIXFOLDERS=ON build
+        if: ${{ runner.os == 'Linux' }}
+      - run: cmake --build build --config Release -j --target install
+      - name: Archive static liblsl
+        run: |
+          cd ${{ github.workspace }}
+          tar czf liblsl-static-${{ matrix.os }}.tar.gz install
+      - uses: actions/upload-artifact@v4
+        with:
+          name: liblsl-static-${{ matrix.os }}
+          path: liblsl-static-${{ matrix.os }}.tar.gz
+
+  labrecorder:
+    if: ${{ github.event.pull_request.draft == false }}
+    needs: liblsl
+    name: labrecorder on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     strategy:
@@ -36,7 +84,6 @@ jobs:
             cmake_extra: "-T v142,host=x86"
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/install-liblsl
       - run: sudo apt install qtbase5-dev
         if: ${{ matrix.os == 'ubuntu-20.04' }}
       - run: sudo apt install qt6-base-dev freeglut3-dev
@@ -48,16 +95,24 @@ jobs:
         if: ${{ matrix.os == 'windows-latest' }}
       - run: brew install qt
         if: ${{ matrix.os == 'macos-latest' }}
+      - run: sudo apt install -y libpugixml-dev
+        if: ${{ runner.os == 'Linux' }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: liblsl-static-${{ matrix.os }}
+      - name: Unpack the static liblsl
+        run: tar xzf liblsl-static-${{ matrix.os }}.tar.gz
       - name: Configure CMake
         run: |
           cmake --version
           cmake -S . -B build \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=${PWD}/install \
-            -DCPACK_PACKAGE_DIRECTORY=${PWD}/package \
-            -DBUILD_LIBLSL_FROM_SOURCE=ON \
+            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install_labrecorder \
+            -DCPACK_PACKAGE_DIRECTORY=${{ github.workspace }}/package \
+            -DLSL_INSTALL_ROOT="${{ github.workspace }}/install" \
             ${{ matrix.cmake_extra }}
-          cmake -DLSL_UNIXFOLDERS=ON build
+      - run: cmake -DLSL_UNIXFOLDERS=ON build
+        if: ${{ runner.os == 'Linux' }}
       - run: cmake --build build --config Release -j --target install
       - name: Package
         run: |
