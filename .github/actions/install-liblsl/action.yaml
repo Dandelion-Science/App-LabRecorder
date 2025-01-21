@@ -1,0 +1,29 @@
+name: "Install liblsl."
+description: "A composite action to install liblsl and system dependencies on different operating systems."
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install linux dependencies
+      if: ${{ runner.os == 'Linux' }}
+      shell: bash
+      run: |
+        sudo apt install -y libpugixml-dev
+    - name: Install liblsl (linux)
+      if: ${{ runner.os == 'Linux' }}
+      shell: bash
+      run: |
+        curl -L https://github.com/sccn/liblsl/releases/download/v1.16.2/liblsl-1.16.2-$(lsb_release -sc)_amd64.deb -o liblsl-1.16.2_amd64.deb
+        sudo apt install -y ./liblsl-1.16.2_amd64.deb
+        rm liblsl-1.16.2_amd64.deb
+    - name: Install liblsl (macOS)
+      if: ${{ runner.os == 'macOS' }}
+      shell: bash
+      run: brew install labstreaminglayer/tap/lsl
+    - name: Install liblsl (windows)
+      if: ${{ runner.os == 'Windows' }}
+      shell: bash
+      run: |
+        curl -L https://github.com/sccn/liblsl/releases/download/v1.16.2/liblsl-1.16.2-Win_amd64.zip -o liblsl-1.16.2-Win_amd64.zip
+        7z x liblsl-1.16.2-Win_amd64.zip -oLSL
+        rm liblsl-1.16.2-Win_amd64.zip

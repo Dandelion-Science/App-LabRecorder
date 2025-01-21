@@ -36,8 +36,7 @@ jobs:
             cmake_extra: "-T v142,host=x86"
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
+      - uses: ./.github/actions/install-liblsl
       - run: sudo apt install qtbase5-dev
         if: ${{ matrix.os == 'ubuntu-20.04' }}
       - run: sudo apt install qt6-base-dev freeglut3-dev
