@@ -53,10 +53,11 @@ jobs:
       - run: cmake -DLSL_UNIXFOLDERS=ON build
         if: ${{ runner.os == 'Linux' }}
       - run: cmake --build build --config Release -j --target install
-      - name: Archive static liblsl
-        run: |
-          cd ${{ github.workspace }}
-          tar czf liblsl-static-${{ matrix.os }}.tar.gz install
+      - run: cd ${{ github.workspace }}
+        if: ${{ runner.os != 'Windows' }}
+      - run: cd "$(cygpath -u "${{ github.workspace }}")"
+        if: ${{ runner.os == 'Windows' }}
+      - run: tar czf liblsl-static-${{ matrix.os }}.tar.gz install
       - uses: actions/upload-artifact@v4
         with:
           name: liblsl-static-${{ matrix.os }}
@@ -92,10 +93,10 @@ jobs:
         with:
           version: "6.4.0"
           arch: "win64_msvc2019_64"
-        if: ${{ matrix.os == 'windows-latest' }}
+        if: ${{ runner.os == 'Windows' }}
       - run: brew install qt
-        if: ${{ matrix.os == 'macos-latest' }}
-      - run: sudo apt install -y libpugixml-dev
+        if: ${{ runner.os == 'macOS' }}
+      - run: sudo apt install -y libpugixml-dev  # TODO: attempt to remove this install
         if: ${{ runner.os == 'Linux' }}
       - uses: actions/download-artifact@v4
         with:
