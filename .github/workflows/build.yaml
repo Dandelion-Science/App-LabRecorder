@@ -16,7 +16,7 @@ defaults:
 
 jobs:
   liblsl:
-    if: ${{ github.event.pull_request.draft == false }}
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.draft == false }}
     name: liblsl on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
@@ -58,7 +58,7 @@ jobs:
           path: liblsl-static-${{ matrix.os }}.tar.gz
 
   labrecorder:
-    if: ${{ github.event.pull_request.draft == false }}
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.draft == false }}
     needs: liblsl
     name: labrecorder on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -114,5 +114,25 @@ jobs:
           cmake -E remove_directory package/_CPack_Packages
       - uses: actions/upload-artifact@v4
         with:
-          name: pkg-${{ matrix.os }}
+          name: labrecorder-${{ matrix.os }}
           path: package/LabRecorder*
+
+  publish:
+    if: ${{ github.event_name == 'release' }}
+    needs: labrecorder
+    name: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: labrecorder-*
+          merge-multiple: true
+          path: dist
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          tag_name: ${{ github.event.release.tag_name }}
